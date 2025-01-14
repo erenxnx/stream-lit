@@ -9,7 +9,7 @@ st.markdown(
     """
     <style>
     body {
-        background-color: #f0f2f6;
+        background-color: #f0f2f6; /* Warna latar belakang */
         font-family: 'Arial', sans-serif;
     }
     .main-title {
@@ -38,18 +38,33 @@ st.markdown(
 # Mengatur konfigurasi sidebar
 st.sidebar.title("Navigasi")
 st.sidebar.markdown("<div style='color: #4CAF50; font-weight: bold;'>🚀 Pilih Halaman:</div>", unsafe_allow_html=True)
-page = st.sidebar.radio("", ["Upload Data", "Analisis", "Prediksi"])
+page = st.sidebar.radio("", ["Home", "Upload Data", "Analisis", "Prediksi"])
+
 
 # Membaca data langsung dari file yang diimpor
 data = pd.read_csv("Regression.csv")
 
-if page == "Upload Data":
+# Halaman Home
+if page == "Home":
+    st.markdown("<div class='main-title'>🏠 Selamat Datang di Aplikasi Analisis Data</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; font-size: 18px; margin-top: 20px;'>Silakan pilih opsi navigasi di sebelah kiri untuk mulai bekerja dengan data Anda.</div>", unsafe_allow_html=True)
+
+    # URL gambar
+    image_url = "https://i.imgur.com/lhuz5f4.png"
+
+    # Menampilkan gambar
+    st.image(image_url, caption="Welcome to App")
+
+
+# Halaman Upload Data
+elif page == "Upload Data":
     st.markdown("<div class='main-title'>📂 Upload Data</div>", unsafe_allow_html=True)
     st.markdown("<div class='section-title'>Data yang diunggah:</div>", unsafe_allow_html=True)
     st.dataframe(data.head(), height=300)
     st.markdown("<div class='section-title'>Statistik Deskriptif:</div>", unsafe_allow_html=True)
     st.write(data.describe())
 
+# Halaman Analisis
 elif page == "Analisis":
     st.markdown("<div class='main-title'>📊 Analisis Data</div>", unsafe_allow_html=True)
     st.markdown("<div class='section-title'>Pilih Fitur dan Target:</div>", unsafe_allow_html=True)
@@ -58,7 +73,6 @@ elif page == "Analisis":
     target = st.selectbox("Pilih kolom target:", options=data.columns)
 
     if fitur and target:
-        # Pastikan fitur dan target numerik
         try:
             X = data[fitur].apply(pd.to_numeric, errors='coerce').fillna(0)
             y = pd.to_numeric(data[target], errors='coerce').fillna(0)
@@ -66,22 +80,17 @@ elif page == "Analisis":
             st.error(f"Error dalam memproses data: {e}")
             st.stop()
 
-        # Validasi data
         if X.isnull().values.any() or y.isnull().values.any():
             st.error("Data mengandung nilai yang tidak valid atau kosong. Harap periksa dataset Anda.")
             st.stop()
 
-        # Membagi data menjadi train dan test
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Membuat model regresi
         model = LinearRegression()
         model.fit(X_train, y_train)
 
-        # Prediksi
         y_pred = model.predict(X_test)
 
-        # Evaluasi model
         mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
 
@@ -89,7 +98,6 @@ elif page == "Analisis":
         st.write(f"**Mean Squared Error (MSE):** {mse}")
         st.write(f"**R-squared (R2):** {r2}")
 
-        # Menampilkan koefisien regresi
         st.markdown("<div class='section-title'>Koefisien Model:</div>", unsafe_allow_html=True)
         coef_df = pd.DataFrame({
             'Fitur': fitur,
@@ -97,6 +105,7 @@ elif page == "Analisis":
         })
         st.write(coef_df)
 
+# Halaman Prediksi
 elif page == "Prediksi":
     st.markdown("<div class='main-title'>🔮 Prediksi Data Baru</div>", unsafe_allow_html=True)
     fitur = st.sidebar.multiselect("Pilih kolom fitur untuk prediksi:", options=data.columns)
